@@ -4,6 +4,12 @@ class calculatorController {
 
         this._operation = [];
         this._displaycalcEl = document.querySelector('#display');
+        this.initialize();
+    }
+
+    initialize () {
+
+        this.getButtons();
     }
 
     get displayCalc () {
@@ -14,6 +20,11 @@ class calculatorController {
     set displayCalc (value) {
 
         this._displaycalcEl.innerHTML = value;
+    }
+
+    setError() {
+
+        this._displaycalcEl.innerHTML = 'Error';
     }
 
     // get and initialize events listeners for all buttons, it's just a for inside other
@@ -176,9 +187,7 @@ class calculatorController {
                 this.addOperation(value);               
                 break;
             default:
-                this.setError();
-
-                
+                this.setError();                
         }
     }
 
