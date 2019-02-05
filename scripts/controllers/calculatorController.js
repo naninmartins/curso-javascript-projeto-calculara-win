@@ -121,7 +121,8 @@ class calculatorController {
         }
         else {
             this._operation[this._operation.length-1] = this._operation[this._operation.length-1].slice(0,-1);           
-        }        
+        }  
+        this._displaycalcEl.innerHTML = this._operation.join('');      
     }
 
     isOperator (value) {
@@ -159,31 +160,39 @@ class calculatorController {
     }
 
     /* execute the equal button */
-    equalOperation() {
-
+    equalOperation(value = null) {
+        
         if (this._operation.length < 2) {
             
-            this._operation = [eval(this._operation+this._equalOperator+this._equalNumber)]
+            this._operation = [eval(this._operation+this._equalOperator+this._equalNumber).toString()];
         }
 
-        else if (this.isOperator(this._operation[this._operation.length-1])) {
-
-            this.setEqualElements(this._operation.length-2,this._operation.length-1)            
-            this._operation = [eval(this._operation.join('')+this._equalNumber)]; //result of operations
-        }
         else {
+            if (this._operation.length < 3) {
 
-            this.setEqualElements(this._operation.length-1,this._operation.length-2)
-            this._operation = [eval(this._operation.join(''))];
+                if (value) {
+                    this._operation.push(Math.pow(this._operation[0],2));
+                }
+                else {
+                    this._operation.push(this._operation[0]);
+                }                
+            }
+            else {
+                if (value) {
+                    this._operation[this._operation.length-1] *= this._operation[0] / 100;
+                    this._operation[this._operation.length-1] = this._operation[this._operation.length-1].toString();
+                }
+
+            }console.log(this._operation);
+            this.equal();          
         }
-        
         this._displaycalcEl.innerHTML = this._operation.join('');
     }
 
-    /* atribuition of equals operator atributes */
-    setEqualElements (numberPosition, operatorPosition) { 
-        this._equalOperator = this._operation[operatorPosition];
-        this._equalNumber = this._operation[numberPosition];
+    equal() {
+    this._equalOperator = this._operation[this._operation.length-2];
+    this._equalNumber = this._operation[this._operation.length-1];           
+    this._operation = [eval(this._operation.join('')).toString()];  
     }
 
     // function to execute button event triggered
@@ -217,14 +226,6 @@ class calculatorController {
             case 'X':
                 this.addOperation('*');
                 break;
-                
-            case '%':
-                this.addOperation('%');  
-                break;
-
-            case '=':
-                this.equalOperation(); 
-                break;
 
             case '.':
             this.addOperation('.'); 
@@ -244,7 +245,15 @@ class calculatorController {
 
             case '±':
             this.plusMinus(); 
+                break;
+
+            case '%':
+            this.equalOperation('%');  
                 break;          
+                
+            case '=':
+            this.equalOperation(); 
+                break;
 
             case '0':
             case '1':
