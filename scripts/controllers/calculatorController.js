@@ -36,9 +36,7 @@ class calculatorController {
             
             this.addEventListenerAll('click drag', btn, e =>{
 
-                //console.log(btn.innerHTML);
                 this.execBtn (btn.innerHTML);
-
             });    
         });
     }
@@ -52,36 +50,56 @@ class calculatorController {
         });
     }
 
+    evalOperation (value) {
+
+        if (this._operation.length == 3) {
+            //make the calculus
+            let result = eval( this._operation.join(''));
+            this._operation = [result.toString(), value];
+         } 
+         else {
+            this._operation.push(value);
+         }
+    }
+
     addOperation (value) {
 
-        //what's the flow and situations on calculate?
-        //can be a operator or a number
-        //if a number I need concat
-        //if a operator a need a new array position or a change of operator position
-        //the dot signal will be treated together with number by string and evalue function
+        if (this._operation.length == 0) {
+            if (this.isOperator(value)) {
+                this._displaycalcEl.innerHTML = '0';
+            }
+            else {
+                this.evalOperation(value); 
+            }
+        }        
 
-        if (isNaN(this._operation[this._operation.length-1]) /*is not a number the last array position?*/) {
+        else if (isNaN(this._operation[this._operation.length-1]) /*is not a number the last array position?*/) {
 
+            if (isNaN(this._operation[this._operation.length-2])) {
+
+                this.concatNumber(value);
+            }
             //the value is a operator?
-            if (this.isOperator(value) /*is a operator?*/) {
+            else if (this.isOperator(value) /*is a operator?*/) {
                 //change the position
                 this._operation[this._operation.length-1] = value;
             }
             else {
                 //push a new number
-                this._operation.push(value);
+                this.evalOperation(value);
             }
 
         } //else 
         else if (this.isOperator(value)/* the value is a operator?*/){
             // push new position
-            this._operation.push(value);
+            this.evalOperation(value);
         }
         else {
             
             this.concatNumber(value);// It's a number so concat the array
         }
         console.log(this._operation);
+        this._displaycalcEl.innerHTML = this._operation.join('');
     }
 
     clearAll() {
@@ -110,7 +128,29 @@ class calculatorController {
     concatNumber (value) {
 
         this._operation[this._operation.length-1] += value;
+    }
 
+    plusMinus() {
+
+        let element = this._operation[this._operation.length-1].toString();
+        console.log(element);
+        if (this.isOperator(element)) {
+            
+            this._operation.push('-');
+        }
+        else {
+
+            if (element[0] == '-') {
+
+                this._operation[this._operation.length-1] = element.slice(1,element.length);
+            }
+            else {
+                let minus = '-';
+                minus += this._operation[this._operation.length-1];  
+                this._operation[this._operation.length-1] = minus;
+            }
+        }
+        console.log(this._operation);
     }
 
 
@@ -154,7 +194,7 @@ class calculatorController {
                 this.addOperation('='); 
                 break;
 
-            case ',':
+            case '.':
             this.addOperation('.'); 
                 break;
 
@@ -171,7 +211,7 @@ class calculatorController {
                 break;
 
             case '±':
-            this.addOperation('±'); 
+            this.plusMinus(); 
                 break;          
 
             case '0':
