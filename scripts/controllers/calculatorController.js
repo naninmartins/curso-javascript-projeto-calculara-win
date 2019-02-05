@@ -2,6 +2,8 @@ class calculatorController {
 
     constructor () {
 
+        this._equalNumber = '';
+        this._equalOperator = '';
         this._operation = [];
         this._displaycalcEl = document.querySelector('#display');
         this.initialize();
@@ -71,8 +73,7 @@ class calculatorController {
             else {
                 this.evalOperation(value); 
             }
-        }        
-
+        }      
         else if (isNaN(this._operation[this._operation.length-1]) /*is not a number the last array position?*/) {
 
             if (isNaN(this._operation[this._operation.length-2])) {
@@ -88,7 +89,7 @@ class calculatorController {
                 //push a new number
                 this.evalOperation(value);
             }
-
+//3461032019
         } //else 
         else if (this.isOperator(value)/* the value is a operator?*/){
             // push new position
@@ -104,6 +105,9 @@ class calculatorController {
 
     clearAll() {
         this._operation = [];
+        this._equalNumber = '';
+        this._equalOperator = '';
+        this._displaycalcEl.innerHTML = '0';
     }
 
     clearEntry() {
@@ -151,8 +155,36 @@ class calculatorController {
             }
         }
         console.log(this._operation);
+        this._displaycalcEl.innerHTML = this._operation.join('');
     }
 
+    /* execute the equal button */
+    equalOperation() {
+
+        if (this._operation.length < 2) {
+            
+            this._operation = [eval(this._operation+this._equalOperator+this._equalNumber)]
+        }
+
+        else if (this.isOperator(this._operation[this._operation.length-1])) {
+
+            this.setEqualElements(this._operation.length-2,this._operation.length-1)            
+            this._operation = [eval(this._operation.join('')+this._equalNumber)]; //result of operations
+        }
+        else {
+
+            this.setEqualElements(this._operation.length-1,this._operation.length-2)
+            this._operation = [eval(this._operation.join(''))];
+        }
+        
+        this._displaycalcEl.innerHTML = this._operation.join('');
+    }
+
+    /* atribuition of equals operator atributes */
+    setEqualElements (numberPosition, operatorPosition) { 
+        this._equalOperator = this._operation[operatorPosition];
+        this._equalNumber = this._operation[numberPosition];
+    }
 
     // function to execute button event triggered
     execBtn (value){
@@ -191,7 +223,7 @@ class calculatorController {
                 break;
 
             case '=':
-                this.addOperation('='); 
+                this.equalOperation(); 
                 break;
 
             case '.':
