@@ -10,52 +10,49 @@ class calculatorController {
     }
 
     initialize () {
-
         this.getButtons();
+        this.getKeyword();
     }
 
     get displayCalc () {
-
         return this._displaycalcEl.innerHTML;
     }
 
     set displayCalc (value) {
-
         this._displaycalcEl.innerHTML = value;
     }
 
     setError() {
-
         this._displaycalcEl.innerHTML = 'Error';
     }
 
     // get and initialize events listeners for all buttons, it's just a for inside other
     getButtons () {
-
-        let buttons = document.querySelectorAll('button');
-        
-        buttons.forEach((btn,i) => {
-            
+        let buttons = document.querySelectorAll('button');        
+        buttons.forEach((btn,i) => {            
             this.addEventListenerAll('click drag', btn, e =>{
-
                 this.execBtn (btn.innerHTML);
             });    
         });
     }
 
+    getKeyword () {
+                  
+        document.addEventListener('keyup', e=>{
+            this.execBtn(e.key);
+            //console.log(e.key);
+        });      
+    }
+
     addEventListenerAll (events, element, fn) {
-
         events.split(' ').forEach(event => {
-
             element.addEventListener(event, fn, false)
-
         });
     }
 
     evalOperation (value) {
 
         if (this._operation.length == 3) {
-            //make the calculus
             let result = eval( this._operation.join(''));
             this._operation = [result.toString(), value];
          } 
@@ -77,7 +74,6 @@ class calculatorController {
         else if (isNaN(this._operation[this._operation.length-1]) /*is not a number the last array position?*/) {
 
             if (isNaN(this._operation[this._operation.length-2])) {
-
                 this.concatNumber(value);
             }
             //the value is a operator?
@@ -90,17 +86,23 @@ class calculatorController {
                 this.evalOperation(value);
             }
 //3461032019
-        } //else 
+        }
         else if (this.isOperator(value)/* the value is a operator?*/){
             // push new position
             this.evalOperation(value);
         }
-        else {
-            
+        else {            
             this.concatNumber(value);// It's a number so concat the array
         }
-        console.log(this._operation);
-        this._displaycalcEl.innerHTML = this._operation.join('');
+        this.updateDisplay();
+    }
+
+    updateDisplay() {
+
+        if (this._operation.join('').length > 9) {
+            this._displaycalcEl.innerHTML = 'NaN';
+        }
+        else this._displaycalcEl.innerHTML = this._operation.join('');
     }
 
     clearAll() {
@@ -111,42 +113,36 @@ class calculatorController {
     }
 
     clearEntry() {
-        return this._operation.pop();
+        this._operation.pop();
+        this._displaycalcEl.innerHTML = this._operation.join('');
     }
 
     clearLast () {
-
         if (isNaN(this._operation[this._operation.length-1])) {
              this._operation.pop();
         }
         else {
             this._operation[this._operation.length-1] = this._operation[this._operation.length-1].slice(0,-1);           
         }  
-        this._displaycalcEl.innerHTML = this._operation.join('');      
+        this.updateDisplay();      
     }
 
-    isOperator (value) {
-        
+    isOperator (value) {        
         return (['+','-','/','*','%','√','x²','¹/x','±'].indexOf(value) > -1);
     }
 
     concatNumber (value) {
-
         this._operation[this._operation.length-1] += value;
     }
 
     plusMinus() {
 
         let element = this._operation[this._operation.length-1].toString();
-        console.log(element);
-        if (this.isOperator(element)) {
-            
+        if (this.isOperator(element)) {            
             this._operation.push('-');
         }
         else {
-
             if (element[0] == '-') {
-
                 this._operation[this._operation.length-1] = element.slice(1,element.length);
             }
             else {
@@ -155,38 +151,68 @@ class calculatorController {
                 this._operation[this._operation.length-1] = minus;
             }
         }
-        console.log(this._operation);
-        this._displaycalcEl.innerHTML = this._operation.join('');
+        this.updateDisplay();
     }
 
     /* execute the equal button */
     equalOperation(value = null) {
-        
-        if (this._operation.length < 2) {
-            
-            this._operation = [eval(this._operation+this._equalOperator+this._equalNumber).toString()];
-        }
 
+        if (this._operation.length < 2) {    
+            switch (value){                
+                case '√':
+                    this._operation = [Math.sqrt(this._operation[0]).toString()];
+                    break;                
+                case 'x²':
+                    this._operation = [Math.pow(this._operation[0],2).toString()];
+                    break;
+                case '¹/x':
+                    this._operation = [1/this._operation[0].toString()];
+                break;                
+                default:
+                this._operation = [eval(this._operation+this._equalOperator+this._equalNumber).toString()];
+            }              
+        }
         else {
             if (this._operation.length < 3) {
 
-                if (value) {
-                    this._operation.push(Math.pow(this._operation[0],2));
-                }
-                else {
+                switch (value){                
+                    case '%':
+                    case 'x²':
+                        this._operation.push(Math.pow(this._operation[0],2).toString());
+                    break;                    
+                    case '√':
+                        this._operation.push(Math.sqrt(this._operation[0]).toString());
+                    break;                  
+                    case '¹/x':
+                        this._operation.push(1/this._operation[0].toString());
+                    break;                    
+                    default:
                     this._operation.push(this._operation[0]);
-                }                
+                }              
             }
             else {
-                if (value) {
-                    this._operation[this._operation.length-1] *= this._operation[0] / 100;
-                    this._operation[this._operation.length-1] = this._operation[this._operation.length-1].toString();
-                }
 
-            }console.log(this._operation);
+                switch (value){                
+                    case '%':
+                        this._operation[this._operation.length-1] *= this._operation[0] / 100;
+                        this._operation[this._operation.length-1] = this._operation[this._operation.length-1].toString();
+                    break;
+                    case '√':
+                        this._operation[this._operation.length-1] = Math.sqrt(this._operation[this._operation.length-1]).toString();
+                    break;                    
+                    case 'x²':
+                        this._operation[this._operation.length-1] = Math.pow(this._operation[this._operation.length-1],2).toString();
+                    break;    
+                    case '¹/x':
+                        this._operation[this._operation.length-1] = 1/this._operation[this._operation.length-1].toString();
+                    break;                    
+                    default:
+                    this._operation.push(this._operation[0]);
+                }               
+            }
             this.equal();          
         }
-        this._displaycalcEl.innerHTML = this._operation.join('');
+        this.updateDisplay();
     }
 
     equal() {
@@ -197,64 +223,54 @@ class calculatorController {
 
     // function to execute button event triggered
     execBtn (value){
-
         switch (value){
             case 'C':
                 this.clearAll();
-                break;
-                
-            case 'CE':
+                break;                
+            case 'CE':            
                 this.clearEntry();
                 break;
-
             case '←':
+            case 'Backspace':
                 this.clearLast(); 
-                break;
-                
+                break;                
             case '+':
                 this.addOperation('+');
-                break;
-                
+                break;                
             case '-':
                 this.addOperation('-');
-                break;
-                
+                break;                
             case '÷':
+            case '/':
                 this.addOperation('/');
-                break;
-                
+                break;                
             case 'X':
+            case '*':
                 this.addOperation('*');
                 break;
-
             case '.':
+            case ',':
             this.addOperation('.'); 
                 break;
-
             case '√':
-            this.addOperation('√'); 
+            this.equalOperation('√'); 
                 break;
-
             case 'x²':
-            this.addOperation('x²'); 
+            this.equalOperation('x²'); 
                 break;
-
             case '¹/x':
-            this.addOperation('¹/x'); 
+            this.equalOperation('¹/x'); 
                 break;
-
             case '±':
             this.plusMinus(); 
                 break;
-
             case '%':
             this.equalOperation('%');  
-                break;          
-                
+                break;       
             case '=':
+            case 'Enter':
             this.equalOperation(); 
                 break;
-
             case '0':
             case '1':
             case '2':
@@ -267,9 +283,7 @@ class calculatorController {
             case '9':
                 this.addOperation(value);               
                 break;
-            default:
-                this.setError();                
+            default:             
         }
     }
-
 }
